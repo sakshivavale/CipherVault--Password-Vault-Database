@@ -1,35 +1,23 @@
 # 🔐 CipherVault: Zero-Knowledge Password Vault Database
 
-**CipherVault** is a zero-knowledge password manager web application built with **Streamlit**, **Python**, and **AES-256 encryption**. Designed with a privacy-first approach, CipherVault ensures that master passwords and decryption keys are never stored in plain text or transmitted. All sensitive credentials—including stored usernames and passwords—are encrypted client-side using **AES-256-GCM** before reaching the database layer.
+**CipherVault** is an enterprise-grade, zero-knowledge password management platform built using **Streamlit**, **Python**, and **AES-256-GCM encryption**. Designed with a privacy-first approach, CipherVault guarantees that master passwords and decryption keys are never stored in plain text, logged, or transmitted across the wire. 
+
+All sensitive vault payloads—such as account titles, usernames, and passwords—are encrypted client-side using **AES-256-GCM** before touching the underlying database layer.
 
 ---
 
-## ✨ Features
+## 🛠️ Detailed Architectural & Cryptographic Concepts
 
-* 🔐 **Zero-Knowledge Architecture:** Derived decryption keys remain strictly in runtime session memory during active user sessions and are purged on logout.
-* 🛡️ **Strong Cryptography:**
-  * **Master Password Hashing:** Uses `bcrypt` with a pre-hashing step (`SHA-256 + Base64`) to safely handle master passwords of any length.
-  * **Key Derivation:** Uses `PBKDF2` (HMAC-SHA256) with 600,000 iterations and a per-user 16-byte random salt.
-  * **Symmetric Encryption:** Encrypts vault fields using `AES-256-GCM` with dynamic 12-byte nonces.
-* 🗄️ **Flexible Database Backend:** Operates seamlessly with local **SQLite** (default for zero-config setup) or connects to **MySQL** via environment variables.
-* 🔑 **Cryptographically Secure Generator:** Generates strong, customizable passwords using Python's `secrets` module.
-* 📁 **Category & Entry Management:** Organize credentials by customizable categories, quickly reveal/hide passwords, and filter vault entries.
-* 📋 **Audit Logging:** Logs key account events (registration, logins, failed attempts, and entry creations/deletions) for security auditing.
+### 1. Zero-Knowledge Architecture
+In a zero-knowledge security framework, the server hosting the database possesses **zero knowledge** regarding the plain-text contents of the stored vault entries or the encryption keys required to read them. 
+
+* **Runtime-Only Decryption Key:** When a user logs in, the symmetric key used for encrypting and decrypting vault entries is derived strictly in application session memory (`st.session_state`). 
+* **Purge on Logout:** The key is never written to a disk, log file, or database table. Once the user clicks **Logout** or the session terminates, the key is permanently cleared from session memory.
 
 ---
 
-## 🛠️ Tech Stack
+### 2. Deep-Dive Cryptography Stack
 
-* **Frontend / UI:** [Streamlit](https://streamlit.io/)
-* **Cryptography:** `cryptography` (AES-GCM, PBKDF2HMAC) & `bcrypt`
-* **Database Options:** SQLite / MySQL
-* **Language:** Python 3.9+
+CipherVault implements standard cryptographic primitives via the Python `cryptography` and `bcrypt` libraries:
 
----
-
-## 🚀 Quick Start Guide
-
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/sakshivavale/CipherVault--Password-Vault-Database.git](https://github.com/sakshivavale/CipherVault--Password-Vault-Database.git)
-cd CipherVault--Password-Vault-Database
+#### A. Master Password Pre-Hashing & Verification
